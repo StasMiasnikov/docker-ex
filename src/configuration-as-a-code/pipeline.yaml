@@ -12,12 +12,10 @@ jobs:
                   stage('autoreconf -fi') { sh 'autoreconf -fi' }
                   stage('./configure --without-ssl') { sh './configure --without-ssl' }
                   stage('make') { sh 'make' }
-                  stage('make test') { sh 'make test > test-output.log' }
+                  stage('make test') { sh 'make check > test-output.log' }
                   stage('Archive test log') { archiveArtifacts artifacts: 'test-output.log', allowEmptyArchive: true }
                   stage('make install') { sh 'make install' }
-                  stage('ls -ltrah /usr/local/lib/') { sh 'ls -ltrah /usr/local/lib/' }
-                  stage('cp -R /usr/local/lib/libcurl.* .') { sh 'cp -R /usr/local/lib/libcurl.* .' }
-                  stage('Archive artifacts') { archiveArtifacts allowEmptyArchive: true, artifacts: 'libcurl.*', fingerprint: true, followSymlinks: false, onlyIfSuccessful: true }
+                  stage('Archive executable') { archiveArtifacts allowEmptyArchive: true, artifacts: 'src/curl , src/.libs/*', fingerprint: true, followSymlinks: false, onlyIfSuccessful: true }
               }      
               ''')
             }

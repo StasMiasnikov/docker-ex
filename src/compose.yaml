@@ -1,6 +1,6 @@
 volumes:
   ssh-keys:
-  portainer_data:
+#  portainer_data:
 
 networks:
   internal_network:
@@ -53,14 +53,14 @@ services:
     ports:
       - "8080:8080"
       - "50000:50000"
-
-  portainer:
-    image: portainer/portainer-ce:2.21.5
-    container_name: portainer
-    restart: always
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - portainer_data:/data
-    ports:
-      - "9443:9443"
-      - "8000:8000"
+#
+#  portainer:
+#    image: portainer/portainer-ce:2.21.5
+#    container_name: portainer
+#    restart: always
+#    volumes:
+#      - /var/run/docker.sock:/var/run/docker.sock
+#      - portainer_data:/data
+#    ports:
+#      - "9443:9443"
+#      - "8000:8000"

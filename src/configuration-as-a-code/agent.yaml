@@ -1,0 +1,13 @@
+jenkins:
+  nodes:
+    - permanent:
+        labelString: "curl-builder"
+        launcher:
+          ssh:
+            credentialsId: "ssh_with_passphrase_provided"
+            host: "${BUILD_AGENT_HOSTNAME}"
+            port: 22
+        name: "curl-builder"
+        remoteFS: "/tmp/agent"
+        retentionStrategy: "always"
+        numExecutors: 1

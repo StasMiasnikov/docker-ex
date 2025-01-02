@@ -1,0 +1,12 @@
+credentials:
+  system:
+    domainCredentials:
+      - credentials:
+          - basicSSHUserPrivateKey:
+              scope: SYSTEM
+              id: ssh_with_passphrase_provided
+              username: jenkins
+              description: "Build agent private key"
+              privateKeySource:
+                directEntry:
+                  privateKey: "${readFile:${SSH_PRIVATE_KEY_PATH}}"

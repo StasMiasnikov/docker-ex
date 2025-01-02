@@ -1,0 +1,66 @@
+volumes:
+  ssh-keys:
+  portainer_data:
+
+networks:
+  internal_network:
+    driver: bridge
+
+services:
+  ssh-keygen:
+    image: jenkins/ssh-agent
+    user: "1000"
+    container_name: ssh-keygen
+    volumes:
+      - ssh-keys:${SSH_PATH}
+    entrypoint:
+      - "bash"
+      - "-c"
+    command:
+      - "rm -rf ${SSH_PATH}/* && ssh-keygen -t rsa -b 2048 -f ${SSH_PATH}/id_rsa -N '' && cat ${SSH_PATH}/id_rsa.pub > ${SSH_PATH}/authorized_keys"
+
+  agent:
+    build: docker/agent
+    container_name: ${BUILD_AGENT_HOSTNAME}
+    hostname: ${BUILD_AGENT_HOSTNAME}
+    networks:
+      - internal_network
+    depends_on:
+      ssh-keygen:
+        condition: service_completed_successfully
+    volumes:
+      - ssh-keys:${SSH_PATH}
+
+  controller:
+    build: docker/controller
+    container_name: ${CONTROLLER_HOSTNAME}
+    depends_on:
+      ssh-keygen:
+        condition: service_completed_successfully
+      agent:
+        condition: service_started
+    environment:
+      JAVA_OPTS: -Djenkins.install.runSetupWizard=false
+      JENKINS_OPTS: --argumentsRealm.roles.user=admin --argumentsRealm.passwd.admin=admin --argumentsRealm.roles.admin=admin
+      CASC_JENKINS_CONFIG: "/var/configuration-as-a-code"
+      SSH_PRIVATE_KEY_PATH: "${SSH_PATH}/id_rsa"
+      BUILD_AGENT_HOSTNAME: "${BUILD_AGENT_HOSTNAME}"
+    volumes:
+      - ./configuration-as-a-code:/var/configuration-as-a-code
+      - ssh-keys:${SSH_PATH}
+    networks:
+      - internal_network
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+
+  portainer:
+    image: portainer/portainer-ce:2.21.5
+    container_name: portainer
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    ports:
+      - "9443:9443"
+      - "8000:8000"

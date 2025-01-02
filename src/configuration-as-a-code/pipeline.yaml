@@ -1,0 +1,25 @@
+jobs:
+  - script: >
+        pipelineJob('curl-build'){
+          displayName('curl-build')
+        definition {
+            cps {
+                sandbox()
+                script(''' 
+          node('curl-builder') {
+                  stage('Workspace files') { sh 'ls' }
+                  stage('Checkout') { checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/curl/curl.git']]) }
+                  stage('autoreconf -fi') { sh 'autoreconf -fi' }
+                  stage('./configure --without-ssl') { sh './configure --without-ssl' }
+                  stage('make') { sh 'make' }
+                  stage('make test') { sh 'make test > test-output.log' }
+                  stage('Archive test log') { archiveArtifacts artifacts: 'test-output.log', allowEmptyArchive: true }
+                  stage('make install') { sh 'make install' }
+                  stage('ls -ltrah /usr/local/lib/') { sh 'ls -ltrah /usr/local/lib/' }
+                  stage('cp -R /usr/local/lib/libcurl.* .') { sh 'cp -R /usr/local/lib/libcurl.* .' }
+                  stage('Archive artifacts') { archiveArtifacts allowEmptyArchive: true, artifacts: 'libcurl.*', fingerprint: true, followSymlinks: false, onlyIfSuccessful: true }
+              }      
+              ''')
+            }
+        }
+        }
